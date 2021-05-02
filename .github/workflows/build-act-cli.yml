@@ -1,0 +1,45 @@
+name: Build act
+
+on:
+  schedule:
+  - cron: 0 * * * *
+
+jobs:
+  check-latest-version:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Update versions
+      run: |
+        # Fetch latest version.
+        VERSION=`wget -qO- https://api.github.com/repos/nektos/act/releases/latest | python -c 'import sys, json; print(json.load(sys.stdin)["tag_name"][1:])'`
+        [[ -z "$VERSION" ]] && exit 1
+        [[ "$VERSION" == *"-"* ]] && exit 0
+
+        # Update spec.
+        sed -i -r '/(Version:\s*).+/{s//\1'$VERSION'/;h};${x;/./{x;q0};x;q1}' act-cli.spec
+
+        # Set new version for subsequent steps
+        git diff --quiet || echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+    - name: Update changelog
+      if: env.VERSION != ''
+      run: |
+        CHANGELOG="* $(date +'%a %b %d %Y') Gonçalo Silva <goncalossilva@gmail.com>\n- Update to $VERSION"
+        sed -i "/%changelog/a $CHANGELOG" act-cli.spec
+
+    - name: Commit
+      if: env.VERSION != ''
+      run: |
+        git config --global user.name "Gonçalo Silva"
+        git config --global user.email "goncalossilva@gmail.com"
+        git commit -am "act $VERSION"
+        git push
+
+    - name: Build on Copr
+      if: env.VERSION != ''
+      env:
+        WEBHOOK_COPR: ${{ secrets.WEBHOOK_COPR }}
+      run: |
+        curl -X POST "$WEBHOOK_COPR/act-cli/" --retry 10
