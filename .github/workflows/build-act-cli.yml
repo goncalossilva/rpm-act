@@ -10,18 +10,26 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Update versions
+    - name: Fetch upstream version
+      uses: nick-fields/retry@v2
+      with:
+        timeout_minutes: 1
+        max_attempts: 3
+        command: |
+          VERSION=`wget -qO- https://api.github.com/repos/nektos/act/releases/latest | python -c 'import sys, json; print(json.load(sys.stdin)["tag_name"][1:])'`
+          [[ -z "$VERSION" ]] && exit 1
+          [[ "$VERSION" == *"-"* ]] && exit 0
+          echo "UPSTREAM_VERSION=$VERSION" >> $GITHUB_ENV
+
+    - name: Update spec version to match upstream version
+      if: env.UPSTREAM_VERSION != ''
       run: |
-        # Fetch latest version.
-        VERSION=`wget -qO- https://api.github.com/repos/nektos/act/releases/latest | python -c 'import sys, json; print(json.load(sys.stdin)["tag_name"][1:])'`
-        [[ -z "$VERSION" ]] && exit 1
-        [[ "$VERSION" == *"-"* ]] && exit 0
+        sed -i -r '/(Version:\s*).+/{s//\1'$UPSTREAM_VERSION'/;h};${x;/./{x;q0};x;q1}' act-cli.spec
 
-        # Update spec.
-        sed -i -r '/(Version:\s*).+/{s//\1'$VERSION'/;h};${x;/./{x;q0};x;q1}' act-cli.spec
-
-        # Set new version for subsequent steps
-        git diff --quiet || echo "VERSION=$VERSION" >> $GITHUB_ENV
+    - name: Set version if changed
+      if: env.UPSTREAM_VERSION != ''
+      run: |
+        git diff --quiet || echo "VERSION=$UPSTREAM_VERSION" >> $GITHUB_ENV
 
     - name: Update changelog
       if: env.VERSION != ''
