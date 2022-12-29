@@ -11,16 +11,13 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: Fetch upstream version
-      uses: nick-fields/retry@v2
-      with:
-        timeout_minutes: 1
-        retry_wait_seconds: 30
-        max_attempts: 10
-        command: |
-          VERSION=`wget -qO- https://api.github.com/repos/nektos/act/releases/latest | python -c 'import sys, json; print(json.load(sys.stdin)["tag_name"][1:])'`
-          [[ -z "$VERSION" ]] && exit 1
-          [[ "$VERSION" == *"-"* ]] && exit 0
-          echo "UPSTREAM_VERSION=$VERSION" >> $GITHUB_ENV
+      run: |
+        VERSION=`wget --header="Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -q -O - \
+          https://api.github.com/repos/nektos/act/releases/latest \
+          | python -c 'import sys, json; print(json.load(sys.stdin)["tag_name"][1:])'`
+        [[ -z "$VERSION" ]] && exit 1
+        [[ "$VERSION" == *"-"* ]] && exit 0
+        echo "UPSTREAM_VERSION=$VERSION" >> $GITHUB_ENV
 
     - name: Update spec version to match upstream version
       if: env.UPSTREAM_VERSION != ''
