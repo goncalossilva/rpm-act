@@ -37,7 +37,7 @@ go build \
     -buildmode=pie \
     -mod=readonly \
     -modcacherw \
-    -ldflags "-linkmode=external -X main.version=${version}"
+    -ldflags "-linkmode=external -X main.version=%{version}"
 
 
 %install
