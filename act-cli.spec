@@ -48,7 +48,7 @@ install -m 0644 LICENSE %{buildroot}%{_datadir}/licenses/%{name}/
 
 
 %verifyscript
-%{buildroot}%{_bindir}/act -h
+%{buildroot}%{_bindir}/act --version
 
 
 %files
