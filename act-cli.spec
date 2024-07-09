@@ -10,7 +10,7 @@ Source0:            https://github.com/nektos/act/archive/v%{version}.tar.gz
 
 BuildRequires:      golang
 BuildRequires:      git
-Requires:           (moby or docker or docker-ce or docker-ce-cli or docker-ee)
+Requires:           (moby or podman or docker or docker-ce or docker-ce-cli or docker-ee)
 
 
 %description
