@@ -1,7 +1,7 @@
 BuildRoot:          %{_tmppath}/%{name}-%{version}-build
 Name:               act-cli
 Version:            0.2.64
-Release:            1%{?dist}
+Release:            2%{?dist}
 Summary:            Run GitHub Actions locally.
 
 License:            MIT
