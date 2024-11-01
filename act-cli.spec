@@ -1,6 +1,6 @@
 BuildRoot:          %{_tmppath}/%{name}-%{version}-build
 Name:               act-cli
-Version:            0.2.68
+Version:            0.2.69
 Release:            1%{?dist}
 Summary:            Run GitHub Actions locally.
 
@@ -57,6 +57,8 @@ install -m 0644 LICENSE %{buildroot}%{_datadir}/licenses/%{name}/
 
 
 %changelog
+* Fri Nov 01 2024 Gonçalo Silva <goncalossilva@gmail.com>
+- Update to 0.2.69
 * Tue Oct 01 2024 Gonçalo Silva <goncalossilva@gmail.com>
 - Update to 0.2.68
 * Tue Sep 10 2024 Gonçalo Silva <goncalossilva@gmail.com>
